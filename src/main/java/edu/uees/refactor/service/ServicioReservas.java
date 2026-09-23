@@ -5,6 +5,7 @@ import edu.uees.refactor.domain.Reserva;
 public class ServicioReservas {
 
     private final ValidadorReserva validador = new ValidadorReserva();
+    private final NotificadorReserva notificador = new NotificadorReserva();
 
     public double procesar(
             Reserva r,
@@ -16,14 +17,7 @@ public class ServicioReservas {
 
         double total = calcularTotal(r);
 
-        System.out.println(
-                "Guardando reserva " + r.getId()
-        );
-
-        System.out.println(
-                "Correo enviado a " + r.getCorreo()
-        );
-
+        notificador.notificar(r);
         r.confirmar();
 
         return total;
