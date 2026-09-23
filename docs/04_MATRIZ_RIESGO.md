@@ -1,21 +1,51 @@
 # Fase J | Matriz de riesgo
 
-Evaluación de cada cambio candidato antes de decidir un orden de refactorización.
+Evalúa la probabilidad de romper comportamiento observable y el impacto si ocurre,
+usando la escala: **Bajo / Medio / Alto**.
 
 | Cambio candidato | Probabilidad de romper | Impacto si rompe | Riesgo | Cómo reducirlo |
 |---|---|---|---|---|
-| Extraer clase de notificación | Baja — el comportamiento observable (reserva confirmada, retorno correcto) no cambia; solo se mueve el `println`. | Alto — si la notificación deja de enviarse o se envía duplicada, el contrato de "correo enviado a …" falla. | **Medio** | Crear prueba `reservaValidaSeConfirma()` que verifique estado CONFIRMADA y retorno antes de mover el código. Introducir interfaz `Notificador` inyectable. |
-| Introducir `Correo` (Value Object) | Media — cambia la firma del constructor de `Reserva` y cualquier lugar que construya una reserva debe adaptarse. | Medio — si la validación del VO es más estricta que el `contains("@")` actual, casos que hoy pasan podrían fallar. | **Medio** | Cubrir LB-03 y variantes de correo con pruebas caracterizadoras antes de cambiar. Mantener la misma regla de validación inicialmente. |
-| Introducir `PeriodoReserva` (Value Object) | Media — modifica el constructor de `Reserva` y la validación en `ServicioReservas` desaparece (se traslada al VO). | Alto — si la invariante `fin > inicio` se implementa de forma diferente, LB-04 y LB-05 pueden comportarse distinto. | **Alto** | Cubrir LB-04, LB-05 con pruebas antes de extraer. Validar que el VO lanza excepción en los mismos casos que hoy devuelven `0`. |
-| Simplificar validaciones | Media — reorganiza o extrae las 4 guardas; el flujo del método cambia aunque el comportamiento no debería. | Medio — una guarda mal ordenada o con condición alterada hace que casos inválidos se procesen o viceversa. | **Medio** | Cubrir los seis escenarios de la línea base como pruebas antes de tocar las guardas. |
-| Separar cálculo VIP | Baja — es un cambio local dentro de `procesar()`; puede extraerse a un método privado o clase sin alterar la signatura pública. | Medio — si el factor `0.85` se escribe mal o se aplica dos veces, LB-02 deja de retornar `34.0`. | **Bajo** | Crear `vipConservaResultadoActual()` que afirme `34.0` antes de mover el bloque. |
+| Extraer clase de notificación | Baja — el `println` no afecta el retorno ni el estado de `Reserva` | Medio — si se omite la llamada, la reserva ya no "notifica" aunque se confirme | **Bajo-Medio** | Proteger con `reservaValidaSeConfirma()` antes de extraer; verificar que el estado sigue siendo `CONFIRMADA` |
+| Introducir `Correo` (Value Object) | Media — requiere cambiar la firma del constructor de `Reserva` y todos los puntos de construcción | Alto — si la validación en el constructor de `Correo` es más estricta que `contains("@")`, casos que hoy pasan podrían rechazarse | **Medio** | Definir primero `correoInvalidoNoProcesa()` y `normalValidaRetorna40()`; asegurarse de que `Correo` acepta exactamente los mismos valores que hoy pasan |
+| Introducir `PeriodoReserva` (Value Object) | Media — cambia la firma del constructor de `Reserva`; la triple condición L27–30 desaparece del servicio | Alto — si el constructor de `PeriodoReserva` lanza excepción en lugar de retornar `0`, el contrato observable cambia | **Medio-Alto** | Definir primero `periodoInvalidoNoProcesa()` con `fin = inicio`; decidir explícitamente si `PeriodoReserva` lanza excepción o retorna nulo; mantener el retorno `0.0` en el servicio |
+| Simplificar validaciones (extraer método `esEntradaValida()`) | Baja — es una extracción interna sin cambio de lógica | Medio — si se reordena o se omite un guard, un caso inválido podría pasar al cálculo | **Bajo** | Cubrir LB-03, LB-04 y LB-06 antes de mover; verificar que los tres retornan `0.0` y estado `PENDIENTE` tras la extracción |
+| Separar cálculo VIP (extraer método `calcularTotal(tipo)`) | Baja — el resultado matemático `40 × 0.85 = 34` no cambia | Bajo — el único riesgo es un error aritmético al mover la expresión | **Bajo** | `vipValidaRetorna34()` y `normalValidaRetorna40()` son suficientes como red de seguridad |
 
-## Escala
+---
 
-- **Bajo:** cambio local, comportamiento bien entendido y prueba fácil de crear.
-- **Medio:** afecta varias decisiones o requiere adaptar construcción de objetos.
-- **Alto:** puede alterar contrato observable, flujos de error o efectos externos.
+## Escala de referencia
 
-## Conclusión de riesgo relativo
+| Nivel | Interpretación |
+|---|---|
+| **Bajo** | Cambio local, comportamiento bien entendido, prueba fácil de crear antes de modificar |
+| **Medio** | Afecta la firma de constructores o requiere adaptar múltiples puntos de construcción |
+| **Alto** | Puede alterar el contrato observable (retorno, estado, excepciones) o efectos externos |
 
-El cambio de **mayor riesgo** es introducir `PeriodoReserva` porque modifica el modelo de datos central (`Reserva`) y traslada la responsabilidad de validación del servicio al objeto, alterando la cadena de errores visible. El de **menor riesgo** es separar el cálculo VIP porque es un cambio completamente local dentro del método y su efecto es verificable con una sola aserción numérica.
+---
+
+## Orden de riesgo creciente
+
+```
+Separar cálculo VIP          → Bajo
+Simplificar validaciones     → Bajo
+Extraer notificación         → Bajo-Medio
+Introducir Correo            → Medio
+Introducir PeriodoReserva    → Medio-Alto
+```
+
+> El cambio de **mayor riesgo** es `PeriodoReserva` porque modifica la firma de `Reserva`,
+> elimina la triple condición del servicio y obliga a decidir si el rechazo se comunica
+> mediante retorno `0.0` (contrato actual) o mediante excepción (contrato nuevo).
+> Esa decisión debe tomarse explícitamente y documentarse antes de ejecutar el cambio.
+
+---
+
+## Relación riesgo ↔ prueba protectora
+
+| Cambio | Prueba mínima antes de ejecutar |
+|---|---|
+| Separar cálculo VIP | `vipValidaRetorna34()`, `normalValidaRetorna40()` |
+| Simplificar validaciones | `correoInvalidoNoProcesa()`, `periodoInvalidoNoProcesa()`, `anticipacionInsuficienteNoProcesa()` |
+| Extraer notificación | `reservaValidaSeConfirma()` |
+| Introducir `Correo` | `correoInvalidoNoProcesa()`, `normalValidaRetorna40()` |
+| Introducir `PeriodoReserva` | `periodoInvalidoNoProcesa()`, `normalValidaRetorna40()`, `vipValidaRetorna34()` |
