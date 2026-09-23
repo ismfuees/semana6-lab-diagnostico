@@ -208,7 +208,7 @@ Cada commit de refactorización fue precedido y seguido por `mvn clean test` ver
 
 ### ☑ Reporte técnico breve
 
-Disponible en: [`../Reporte_tecnico_breve.md`](../Reporte_tecnico_breve.md)
+Disponible en: [`Reporte_tecnico_breve.md`](./Reporte_tecnico_breve.md)
 
 Cubre los 13 puntos del enunciado: portada, problema inicial, línea base, diagnóstico,
 pruebas, tres refactorizaciones, comparación antes/después, historial Git, conclusiones,
