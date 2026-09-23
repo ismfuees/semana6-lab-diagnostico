@@ -1,6 +1,7 @@
 package edu.uees.refactor.service;
 
 import edu.uees.refactor.domain.Reserva;
+import edu.uees.refactor.domain.TipoReserva;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,7 +23,7 @@ class ValidadorReservaTest {
 
     private Reserva reservaValida() {
         return new Reserva("R-1", "ana@uees.edu.ec",
-                INICIO, INICIO.plusHours(1), "NORMAL");
+                INICIO, INICIO.plusHours(1), TipoReserva.NORMAL);
     }
 
     @Test
@@ -38,14 +39,14 @@ class ValidadorReservaTest {
     @Test
     void correoSinArrobaEsRechazado() {
         Reserva r = new Reserva("R-2", "invalido",
-                INICIO, INICIO.plusHours(1), "NORMAL");
+                INICIO, INICIO.plusHours(1), TipoReserva.NORMAL);
         assertFalse(validador.esValida(r, 5));
     }
 
     @Test
     void periodoConFinAnteriorEsRechazado() {
         Reserva r = new Reserva("R-3", "ana@uees.edu.ec",
-                INICIO, INICIO.minusHours(1), "NORMAL");
+                INICIO, INICIO.minusHours(1), TipoReserva.NORMAL);
         assertFalse(validador.esValida(r, 5));
     }
 

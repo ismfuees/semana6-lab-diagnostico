@@ -8,7 +8,7 @@ public class Reserva {
     private final String correo;
     private final LocalDateTime inicio;
     private final LocalDateTime fin;
-    private final String tipo;
+    private final TipoReserva tipo;
     private EstadoReserva estado = EstadoReserva.PENDIENTE;
 
     public Reserva(
@@ -16,7 +16,7 @@ public class Reserva {
             String correo,
             LocalDateTime inicio,
             LocalDateTime fin,
-            String tipo) {
+            TipoReserva tipo) {
 
         this.id = id;
         this.correo = correo;
@@ -45,7 +45,7 @@ public class Reserva {
         return fin;
     }
 
-    public String getTipo() {
+    public TipoReserva getTipo() {
         return tipo;
     }
 

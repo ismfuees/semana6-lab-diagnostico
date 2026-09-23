@@ -2,6 +2,7 @@ package edu.uees.refactor.service;
 
 import edu.uees.refactor.domain.EstadoReserva;
 import edu.uees.refactor.domain.Reserva;
+import edu.uees.refactor.domain.TipoReserva;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +33,7 @@ class ServicioReservasTest {
                 "ana@uees.edu.ec",
                 INICIO,
                 INICIO.plusHours(1),
-                "NORMAL"
+                TipoReserva.NORMAL
         );
     }
 
@@ -42,7 +43,7 @@ class ServicioReservasTest {
                 "vip@uees.edu.ec",
                 INICIO,
                 INICIO.plusHours(1),
-                "VIP"
+                TipoReserva.VIP
         );
     }
 
@@ -98,7 +99,7 @@ class ServicioReservasTest {
                 "correo-invalido",      // sin @
                 INICIO,
                 INICIO.plusHours(1),
-                "NORMAL"
+                TipoReserva.NORMAL
         );
 
         // Act
@@ -123,7 +124,7 @@ class ServicioReservasTest {
                 "ana@uees.edu.ec",
                 INICIO,
                 INICIO.minusHours(1),   // fin < inicio
-                "NORMAL"
+                TipoReserva.NORMAL
         );
 
         // Act

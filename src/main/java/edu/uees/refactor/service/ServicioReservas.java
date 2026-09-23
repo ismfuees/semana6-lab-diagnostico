@@ -1,6 +1,7 @@
 package edu.uees.refactor.service;
 
 import edu.uees.refactor.domain.Reserva;
+import edu.uees.refactor.domain.TipoReserva;
 
 public class ServicioReservas {
 
@@ -25,7 +26,7 @@ public class ServicioReservas {
 
     private double calcularTotal(Reserva r) {
         double total = 40;
-        if ("VIP".equals(r.getTipo())) {
+        if (TipoReserva.VIP == r.getTipo()) {
             return total * 0.85;
         }
         return total;
