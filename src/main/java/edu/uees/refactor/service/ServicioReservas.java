@@ -2,35 +2,15 @@ package edu.uees.refactor.service;
 
 import edu.uees.refactor.domain.Reserva;
 
-/**
- * Código heredado intencional para el Laboratorio 1.
- *
- * IMPORTANTE:
- * No refactorizar antes de completar la línea base,
- * el diagnóstico y el plan de refactorización.
- */
 public class ServicioReservas {
+
+    private final ValidadorReserva validador = new ValidadorReserva();
 
     public double procesar(
             Reserva r,
             int horasAnticipacion) {
 
-        if (r == null) {
-            return 0;
-        }
-
-        if (r.getCorreo() == null
-                || !r.getCorreo().contains("@")) {
-            return 0;
-        }
-
-        if (r.getInicio() == null
-                || r.getFin() == null
-                || !r.getFin().isAfter(r.getInicio())) {
-            return 0;
-        }
-
-        if (horasAnticipacion < 2) {
+        if (!validador.esValida(r, horasAnticipacion)) {
             return 0;
         }
 
